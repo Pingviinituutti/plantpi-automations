@@ -38,8 +38,12 @@ class Waterer():
     flow_speed = 25.5  # millilitres per second
 
     def __init__(self, relays=None):
-        signal.signal(signal.SIGINT, cleanup)
-        signal.signal(signal.SIGTERM, cleanup)
+        # Signal throuws ValueError if not run in main thread
+        try:
+            signal.signal(signal.SIGINT, cleanup)
+            signal.signal(signal.SIGTERM, cleanup)
+        except ValueError:
+            pass
         if relays == None:
             # Default gpio pins used in Waveshare's RPi 8 relay board with DIN-mount.
             self.relays = [5, 6, 13, 16, 19, 20, 21, 26]
@@ -69,8 +73,14 @@ class Waterer():
         duration = read_amount_string(amount) / self.flow_speed
         self.pump_duration(relay, duration)
 
-    def __del__(self):
-        GPIO.cleanup()
+    def pump(self, relay: int, value):
+        if isinstance(value, str):
+            self.pump_amount(relay, value)
+        elif isinstance(value, float) or isinstance(value, int):
+            self.pump_duration(relay, value)
+        else:
+            raise TypeError(
+                f"Invalid type {type(value)} given to pump()! Pumping works with floats or integers for duration, or valid volume strings (l, dl or ml).")
 
     def __exit__(self, type, value, tb):
         GPIO.cleanup()
