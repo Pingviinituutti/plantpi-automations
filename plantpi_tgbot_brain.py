@@ -69,9 +69,9 @@ def pump(update: Update, context: CallbackContext) -> None:
 
         update.message.reply_text(f"Plants have been watered!")
 
-    except (IndexError, ValueError):
+    except (IndexError, ValueError) as e:
         update.message.reply_text(
-            'Usage: /pump <pump_index> <duration/amount>')
+            f'{str(e)}\n\nUsage: /pump <pump_index> <duration/amount>')
 
 
 @restricted

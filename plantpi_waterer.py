@@ -30,7 +30,7 @@ def read_amount_string(amount: str):
         return round(float(amount.lower().replace('dl', '').replace(',', '.').strip()) * 100, 2)
     elif 'l' == amount.lower()[-1]:
         return round(float(amount.lower().replace('l', '').replace(',', '.').strip()) * 1000, 2)
-    raise ValueError(f"Could not read input string '{amount}'.")
+    raise ValueError(f"Could not read amount string '{amount}'. Amount string must end with either 'ml', 'dl' or 'l'.")
 
 
 class Waterer():
@@ -75,7 +75,10 @@ class Waterer():
 
     def pump(self, relay: int, value):
         if isinstance(value, str):
-            self.pump_amount(relay, value)
+            if value.isnumeric():
+                self.pump_duration(relay, float(value))
+            else:
+                self.pump_amount(relay, value)
         elif isinstance(value, float) or isinstance(value, int):
             self.pump_duration(relay, value)
         else:
