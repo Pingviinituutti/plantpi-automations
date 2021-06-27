@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import mariadb
 import smbus2
 import bme280
-from gpiozero import CPUTemperature
+from gpiozero import CPUTemperature, DigitalOutputDevice
 import adafruit_dht
 import board
 from dotenv import dotenv_values
@@ -30,6 +30,11 @@ cur.execute('CREATE TABLE IF NOT EXISTS data (timestamp DATETIME, temp DOUBLE, h
 
 now = datetime.now(timezone.utc)
 
+# turn on the BME280 sensor only when its metrics should be read
+bme280_pwr = DigitalOutputDevice(24)
+bme280_pwr.on()
+time.sleep(.1)
+
 port = 1
 address = 0x76
 bus = smbus2.SMBus(port)
@@ -45,6 +50,7 @@ for i in range(5):
   else:
     break
 
+bme280_pwr.off()
 # the sample method will take a single reading and return a
 # compensated_reading object
 # the compensated_reading class has the following attributes

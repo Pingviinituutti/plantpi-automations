@@ -1,7 +1,7 @@
 # https://pypi.org/project/RPi.bme280/
 import smbus2
 import bme280
-from gpiozero import CPUTemperature
+from gpiozero import CPUTemperature, DigitalOutputDevice
 import adafruit_dht
 import board
 import time
@@ -12,6 +12,11 @@ config = dotenv_values(".env")
 print(f"dotenv user: {config['USER']}")
 print(f"dotenv user password: {config['PASSWORD']}")
 print(f"dotenv database: {config['DATABASE']}")
+
+# turn on the BME280 sensor only when its metrics should be read
+bme280_pwr = DigitalOutputDevice(24)
+bme280_pwr.on()
+time.sleep(.1)
 
 port = 1
 address = 0x76
@@ -48,6 +53,8 @@ else:
   print(f"BME280 humidity: {data.humidity}")
 print(data.timestamp)
 
+bme280_pwr.off()
+
 cpu_temp = CPUTemperature().temperature
 print(f"CPU temp: {cpu_temp}")
 
@@ -56,11 +63,11 @@ dht_t = None
 dht_h = None
 for i in range(10):
   try:
-    print("Reading DHT22.")
+    print("Reading DHT22...")
     dht_t = dht.temperature
     dht_h = dht.humidity
   except RuntimeError:
-    print("Could not read DHT22. Trying soon again...")
+    print("Could not read DHT22. Trying again...")
     time.sleep(1)
     continue
   else:
