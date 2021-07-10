@@ -55,19 +55,27 @@ def pump(update: Update, context: CallbackContext) -> None:
     """Run the selected watering pump for the desired duration or volume."""
     chat_id = update.message.chat_id
     try:
-        pump_index = int(context.args[0])
+        pump_index = (context.args[0])
         duration = context.args[1]
 
         if duration.isnumeric():
             duration = float(duration)
+        
+        if pump_index.lower() in ["all"]:
+            pump_index = [0, 1, 2]    
+        else:
+            pump_index = [int(pump_index)]
 
-        print(
-            f"Water the plants with pump {pump_index} for duration/amount: {duration}")
+        print(f"Watering with pumps {pump_index}.")
 
-        with Waterer() as waterer:
-            waterer.pump(pump_index, duration)
+        for p in pump_index:
+            print(
+                f"Water the plants with pump {p} for duration/amount: {duration}")
 
-        update.message.reply_text(f"Plants have been watered!")
+            with Waterer() as waterer:
+                waterer.pump(p, duration)
+
+            update.message.reply_text(f"Plants have been watered with pump {p}!")
 
     except (IndexError, ValueError) as e:
         update.message.reply_text(
@@ -82,7 +90,7 @@ def help_command(update: Update, _) -> None:
     Usage instructions:
     `/help` \- print this message\.
     `/pump <pump_index> <duration/amount>`
-    Pump index is currently either `0` or `1`\.
+    Pump index is currently either `0`, `1` or `2`. `all` if you want to use all pumps consequtively\.
     If the value given to `duration/amount` is a `float`/`integer`, it is interpreted as seconds the pump should be active\.
     If the value given to `duration/amount` contains '`ml`', '`dl`' or '`l`' in the end, it is interpreted as the amount that should be pumped through the pump\. Note, that the amount is divided per each nozzle output\.
 
